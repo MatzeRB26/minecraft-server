@@ -16,17 +16,18 @@ services:
       - "${MC_PORT:-8888}:25565"
 
     # Non-critical settings (no passwords or other auth data here!)
+    # Each value can be overridden in the .env file, the value after ":-" is the default.
     environment:
       EULA: "${EULA:-false}"
-      MEMORY: "2G"
-      MOTD: "Matze's Minecraft Server"
-      DIFFICULTY: "normal"
-      GAMEMODE: "survival"
-      MAX_PLAYERS: "10"
-      VIEW_DISTANCE: "10"
-      ONLINE_MODE: "true"
-      PVP: "true"
-      LEVEL_NAME: "world"
+      MEMORY: "${MEMORY:-2G}"
+      MOTD: "${MOTD:-Matze's Minecraft Server}"
+      DIFFICULTY: "${DIFFICULTY:-normal}"
+      GAMEMODE: "${GAMEMODE:-survival}"
+      MAX_PLAYERS: "${MAX_PLAYERS:-10}"
+      VIEW_DISTANCE: "${VIEW_DISTANCE:-10}"
+      ONLINE_MODE: "${ONLINE_MODE:-true}"
+      PVP: "${PVP:-true}"
+      LEVEL_NAME: "${LEVEL_NAME:-world}"
 
     # Critical settings (e.g. RCON_PASSWORD) come from the .env file on the server.
     # The server still starts if no .env file exists.
