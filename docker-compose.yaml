@@ -1,0 +1,46 @@
+services:
+  mc-server:
+    # Build the image from our own Dockerfile (no pre-built Minecraft image)
+    build:
+      context: .
+      args:
+        MC_VERSION: "26.3"
+    image: minecraft-server:26.3
+    container_name: mc-server
+
+    # Restart the container automatically after a crash or a server reboot
+    restart: unless-stopped
+
+    # Public port 8888 on the V-Server -> Minecraft port 25565 in the container
+    ports:
+      - "8888:25565"
+
+    # Non-critical settings (no passwords or other auth data here!)
+    environment:
+      EULA: "true"
+      MEMORY: "2G"
+      MOTD: "Matze's Minecraft Server"
+      DIFFICULTY: "normal"
+      GAMEMODE: "survival"
+      MAX_PLAYERS: "10"
+      VIEW_DISTANCE: "10"
+      ONLINE_MODE: "true"
+      PVP: "true"
+      LEVEL_NAME: "world"
+
+    # Critical settings (e.g. RCON_PASSWORD) come from the .env file on the server.
+    # The server still starts if no .env file exists.
+    env_file:
+      - path: .env
+        required: false
+
+    # Persist world, configs and logs on the host in ./data
+    volumes:
+      - ./data:/data
+
+    # Allows typing commands into the server console with "docker attach"
+    stdin_open: true
+    tty: true
+
+    # Give the server time to save the world before it is stopped
+    stop_grace_period: 60s
