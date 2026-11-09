@@ -28,6 +28,7 @@ RUN groupadd --system minecraft \
     && mkdir -p /opt/minecraft /data
 
 # Download the official server.jar from Mojang and verify its SHA1 checksum
+# Note: "$v" is a jq variable inside the jq filter, not a shell variable
 RUN set -eux; \
     MANIFEST_URL="https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"; \
     VERSION_URL="$(curl -fsSL "${MANIFEST_URL}" | jq -r --arg v "${MC_VERSION}" '.versions[] | select(.id==$v) | .url')"; \
