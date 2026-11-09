@@ -17,7 +17,7 @@ services:
 
     # Non-critical settings (no passwords or other auth data here!)
     environment:
-      EULA: "true"
+      EULA: "${EULA:-false}"
       MEMORY: "2G"
       MOTD: "Matze's Minecraft Server"
       DIFFICULTY: "normal"

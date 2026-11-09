@@ -5,8 +5,9 @@ FROM eclipse-temurin:25-jre
 ARG MC_VERSION=26.3
 
 # Default values for the server settings, so the server can always start.
-# They can be overwritten in docker-compose.yaml.
-ENV EULA=true \
+# They can be overwritten via environment variables (.env / docker-compose.yaml).
+# EULA is false by default: the user has to accept it explicitly.
+ENV EULA=false \
     MEMORY=2G \
     MOTD="A Minecraft Server in Docker" \
     DIFFICULTY=normal \

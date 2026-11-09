@@ -9,7 +9,7 @@ DATA_DIR="/data"
 PROPERTIES_FILE="${DATA_DIR}/server.properties"
 
 # Fallback defaults (same as in the Dockerfile), so the server can always start
-EULA="${EULA:-true}"
+EULA="${EULA:-false}"
 MEMORY="${MEMORY:-2G}"
 MOTD="${MOTD:-A Minecraft Server in Docker}"
 DIFFICULTY="${DIFFICULTY:-normal}"
@@ -20,6 +20,13 @@ ONLINE_MODE="${ONLINE_MODE:-true}"
 PVP="${PVP:-true}"
 LEVEL_NAME="${LEVEL_NAME:-world}"
 RCON_PASSWORD="${RCON_PASSWORD:-}"
+
+# The Minecraft EULA must be accepted explicitly by the user
+if [ "${EULA}" != "true" ]; then
+  echo "ERROR: The Minecraft EULA (https://www.minecraft.net/eula) has not been accepted."
+  echo "Set EULA=true in your .env file to accept it and start the server."
+  exit 1
+fi
 
 # Sets "key=value" in server.properties (replaces the key if it already exists).
 # All other lines stay untouched, so manual changes are kept after a restart.
