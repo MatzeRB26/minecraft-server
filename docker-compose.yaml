@@ -11,9 +11,9 @@ services:
     # Restart the container automatically after a crash or a server reboot
     restart: unless-stopped
 
-    # Public port 8888 on the V-Server -> Minecraft port 25565 in the container
+    # Public port on the V-Server (MC_PORT, default 8888) -> Minecraft port 25565 in the container
     ports:
-      - "8888:25565"
+      - "${MC_PORT:-8888}:25565"
 
     # Non-critical settings (no passwords or other auth data here!)
     environment:
