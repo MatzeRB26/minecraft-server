@@ -73,6 +73,7 @@ The project was created as part of the DevSecOps course at Developer Akademie.
 | `check_server.py` | Python script that checks if the server is reachable (uses [mcstatus](https://github.com/py-mine/mcstatus)) |
 | `requirements.txt` | Python dependencies for `check_server.py` |
 | `docs/checklist.md` | Project checklist from Developer Akademie (in German) with the completed requirements |
+| `.dockerignore` | Excludes `.env`, server data, git and docs from the Docker build context |
 
 ## Usage
 
