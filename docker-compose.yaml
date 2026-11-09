@@ -30,7 +30,7 @@ services:
       LEVEL_NAME: "${LEVEL_NAME:-world}"
 
     # Critical settings (e.g. RCON_PASSWORD) come from the .env file on the server.
-    # The server still starts if no .env file exists.
+    # The .env file is also where the EULA has to be accepted (EULA=true).
     env_file:
       - path: .env
         required: false

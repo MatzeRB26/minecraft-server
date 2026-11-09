@@ -5,9 +5,10 @@ A self-built Docker image for a vanilla **Minecraft Java Edition server**, deplo
 ## Table of Contents
 
 - [Description](#description)
-- [Repository Contents](#repository-contents)
 - [Quickstart](#quickstart)
+- [Repository Contents](#repository-contents)
 - [Usage](#usage)
+  - [Accepting the EULA](#accepting-the-eula)
   - [Configuration via environment variables](#configuration-via-environment-variables)
   - [Secrets via .env file](#secrets-via-env-file)
   - [Changing the Minecraft version](#changing-the-minecraft-version)
@@ -27,26 +28,13 @@ This repository contains everything needed to build and run your own Minecraft s
 - The server runs as an unprivileged user (`minecraft`), not as root.
 - World data and configuration are stored on the host, so nothing is lost when the container is restarted or recreated.
 - The container restarts automatically after a crash.
-- Default values for all settings make sure the server can always start.
+- All settings are configurable via a `.env` file and have sensible default values. Only the Minecraft EULA has to be accepted explicitly by the user.
 
 The project was created as part of the DevSecOps course at Developer Akademie.
 
-## Repository Contents
-
-| File | Purpose |
-|---|---|
-| `Dockerfile` | Builds the image: installs tools, downloads and verifies `server.jar`, creates the `minecraft` user |
-| `entrypoint.sh` | Start script: writes `eula.txt` and the settings from environment variables into `server.properties`, then starts the server |
-| `docker-compose.yaml` | Defines the `mc-server` service with port, environment, volume and restart policy |
-| `.env.example` | Template for the `.env` file with critical settings (e.g. RCON password) |
-| `.gitignore` | Excludes `.env`, server data (`data/`) and the Python virtual environment from git |
-| `check_server.py` | Python script that checks if the server is reachable (uses [mcstatus](https://github.com/py-mine/mcstatus)) |
-| `requirements.txt` | Python dependencies for `check_server.py` |
-| `docs/checklist.md` | Project checklist from Developer Akademie (in German) with the completed requirements |
-
 ## Quickstart
 
-**Requirements:** a Linux server with Docker and Docker Compose, port `8888/tcp` open in the firewall, at least 3 GB RAM.
+**Requirements:** a Linux server with Docker and Docker Compose, port `8888/tcp` (or your own `MC_PORT`) open in the firewall, at least 3 GB RAM.
 
 1. Clone the repository on your server:
    ```bash
@@ -59,27 +47,59 @@ The project was created as part of the DevSecOps course at Developer Akademie.
    sed -i "s|<YOUR_RCON_PASSWORD>|$(openssl rand -hex 16)|" .env
    chmod 600 .env
    ```
-3. Build the image and start the server:
+3. Read the [Minecraft EULA](https://www.minecraft.net/eula) and accept it in `.env` (the server does not start without it):
+   ```bash
+   sed -i "s|^EULA=false|EULA=true|" .env
+   ```
+4. Build the image and start the server:
    ```bash
    docker compose up -d --build
    ```
-4. Wait for the line `Done (...)! For help, type "help"`:
+5. Wait for the line `Done (...)! For help, type "help"`:
    ```bash
    docker compose logs -f mc-server
    ```
-5. Connect with your Minecraft Java client to `<SERVER_IP>:8888`.
+6. Connect with your Minecraft Java client to `<SERVER_IP>:8888`.
+
+## Repository Contents
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Builds the image: installs tools, downloads and verifies `server.jar`, creates the `minecraft` user |
+| `entrypoint.sh` | Start script: writes `eula.txt` and the settings from environment variables into `server.properties`, then starts the server |
+| `docker-compose.yaml` | Defines the `mc-server` service with port, environment, volume and restart policy |
+| `.env.example` | Template for the `.env` file: EULA, RCON password and optional settings |
+| `.gitignore` | Excludes `.env`, server data (`data/`) and the Python virtual environment from git |
+| `check_server.py` | Python script that checks if the server is reachable (uses [mcstatus](https://github.com/py-mine/mcstatus)) |
+| `requirements.txt` | Python dependencies for `check_server.py` |
+| `docs/checklist.md` | Project checklist from Developer Akademie (in German) with the completed requirements |
 
 ## Usage
 
+### Accepting the EULA
+
+The [Minecraft EULA](https://www.minecraft.net/eula) is **not** accepted automatically. `EULA` is `false` by default, and the server only starts after you set it explicitly in `.env`:
+
+```env
+EULA=true
+```
+
+If the EULA is not accepted, the container stops with this message in the logs (`docker compose logs mc-server`):
+
+```
+ERROR: The Minecraft EULA (https://www.minecraft.net/eula) has not been accepted.
+```
+
 ### Configuration via environment variables
 
-All non-critical settings are set in the `environment` section of `docker-compose.yaml`. On every start, `entrypoint.sh` writes them into `data/server.properties`.
+All settings can be changed in the `.env` file, without touching `docker-compose.yaml` or the `Dockerfile`. `docker-compose.yaml` passes them to the container (`${VARIABLE:-default}`), and on every start `entrypoint.sh` writes them into `data/server.properties`. If a variable is not set in `.env`, the default is used.
 
 | Variable | Default | Description |
 |---|---|---|
-| `EULA` | `true` | Accept the [Minecraft EULA](https://www.minecraft.net/eula) (required to start) |
+| `EULA` | `false` | Accept the [Minecraft EULA](https://www.minecraft.net/eula), must be set to `true` to start |
+| `MC_PORT` | `8888` | Public port of the server on the host |
 | `MEMORY` | `2G` | Java heap size (`-Xms` and `-Xmx`), e.g. `1G`, `4G` |
-| `MOTD` | `A Minecraft Server in Docker` | Message shown in the server list |
+| `MOTD` | `Matze's Minecraft Server` | Message shown in the server list |
 | `DIFFICULTY` | `normal` | `peaceful`, `easy`, `normal`, `hard` |
 | `GAMEMODE` | `survival` | `survival`, `creative`, `adventure`, `spectator` |
 | `MAX_PLAYERS` | `10` | Maximum number of players |
@@ -88,14 +108,13 @@ All non-critical settings are set in the `environment` section of `docker-compos
 | `PVP` | `true` | Allow players to fight each other |
 | `LEVEL_NAME` | `world` | Name of the world folder in `data/` |
 
-The defaults are defined in the `Dockerfile` (and as fallback in `entrypoint.sh`), so the server also starts if a variable is missing.
+The defaults are defined in `docker-compose.yaml`, in the `Dockerfile` and as fallback in `entrypoint.sh`.
 
-**Example:** creative server with 20 players:
+**Example:** creative server with 20 players. Add these lines to `.env`:
 
-```yaml
-environment:
-  GAMEMODE: "creative"
-  MAX_PLAYERS: "20"
+```env
+GAMEMODE=creative
+MAX_PLAYERS=20
 ```
 
 Apply the changes:
@@ -150,11 +169,16 @@ If needed, change the base image in the `Dockerfile` (e.g. `FROM eclipse-temurin
 
 ### Changing the port
 
-The server is published on port `8888` of the host. To use another port, change the left side of the port mapping in `docker-compose.yaml`:
+The server is published on port `8888` of the host by default. To use another port, set `MC_PORT` in `.env`:
 
-```yaml
-ports:
-  - "<HOST_PORT>:25565"
+```env
+MC_PORT=<HOST_PORT>
+```
+
+Apply the change and connect to `<SERVER_IP>:<HOST_PORT>`:
+
+```bash
+docker compose up -d
 ```
 
 ### Persistent data
