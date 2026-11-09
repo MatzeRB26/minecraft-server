@@ -1,0 +1,14 @@
+# Environment file with secrets (never commit!)
+.env
+
+# Minecraft server data (world, logs, generated configs)
+data/
+
+# Python virtual environment and cache (test script)
+.venv/
+__pycache__/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
