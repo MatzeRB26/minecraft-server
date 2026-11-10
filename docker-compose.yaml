@@ -1,0 +1,47 @@
+services:
+  mc-server:
+    # Build the image from our own Dockerfile (no pre-built Minecraft image)
+    build:
+      context: .
+      args:
+        MC_VERSION: "26.3"
+    image: minecraft-server:26.3
+    container_name: mc-server
+
+    # Restart the container automatically after a crash or a server reboot
+    restart: unless-stopped
+
+    # Public port on the V-Server (MC_PORT, default 8888) -> Minecraft port 25565 in the container
+    ports:
+      - "${MC_PORT:-8888}:25565"
+
+    # Non-critical settings (no passwords or other auth data here!)
+    # Each value can be overridden in the .env file, the value after ":-" is the default.
+    environment:
+      EULA: "${EULA:-false}"
+      MEMORY: "${MEMORY:-2G}"
+      MOTD: "${MOTD:-Matze's Minecraft Server}"
+      DIFFICULTY: "${DIFFICULTY:-normal}"
+      GAMEMODE: "${GAMEMODE:-survival}"
+      MAX_PLAYERS: "${MAX_PLAYERS:-10}"
+      VIEW_DISTANCE: "${VIEW_DISTANCE:-10}"
+      ONLINE_MODE: "${ONLINE_MODE:-true}"
+      PVP: "${PVP:-true}"
+      LEVEL_NAME: "${LEVEL_NAME:-world}"
+
+    # Critical settings (e.g. RCON_PASSWORD) come from the .env file on the server.
+    # The .env file is also where the EULA has to be accepted (EULA=true).
+    env_file:
+      - path: .env
+        required: false
+
+    # Persist world, configs and logs on the host in ./data
+    volumes:
+      - ./data:/data
+
+    # Allows typing commands into the server console with "docker attach"
+    stdin_open: true
+    tty: true
+
+    # Give the server time to save the world before it is stopped
+    stop_grace_period: 60s

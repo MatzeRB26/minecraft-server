@@ -1,0 +1,28 @@
+# Files that are not needed to build the image.
+# Keeps the build context small and makes sure that secrets
+# and server data are never sent to the Docker build.
+
+# Secrets
+.env
+
+# Server data (world, configs, logs)
+data/
+
+# Git
+.git/
+.gitignore
+
+# Python test script and virtual environment
+.venv/
+__pycache__/
+check_server.py
+requirements.txt
+
+# Documentation
+README.md
+docs/
+
+# Compose file, env template and this file (not needed inside the image)
+docker-compose.yaml
+.env.example
+.dockerignore
